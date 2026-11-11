@@ -30,14 +30,20 @@
         label { font-size: 11px; color: #881337; font-weight: 600; display: block; margin-bottom: 4px; }
         input, select { width: 100%; background: #fff5f5; border: 1px solid #fbcfe8; color: #4c0519; padding: 10px; border-radius: 10px; font-size: 13px; outline: none; }
         input:focus, select:focus { border-color: #e11d48; background: #fff; }
+        
         button.action-btn { width: 100%; background: linear-gradient(135deg, #f43f5e, #e11d48); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 12px rgba(225,29,72,0.3); }
         button.action-btn:hover { background: linear-gradient(135deg, #e11d48, #be123c); }
+        
+        .secondary-btn { background: #ffe4e6; color: #e11d48; border: 1px solid #fda4af; padding: 10px; border-radius: 10px; font-weight: bold; font-size: 11px; cursor: pointer; width: 100%; text-align: center; }
+        .secondary-btn:hover { background: #fecdd3; }
 
         .list-container { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
         .list-item { display: flex; justify-content: space-between; align-items: center; background: #fff5f5; padding: 10px 12px; border-radius: 10px; border: 1px solid #fecdd3; font-size: 12px; }
         .item-title { font-weight: 600; color: #881337; }
         .item-sub { font-size: 10px; color: #9f1239; }
         .item-val { font-family: monospace; font-weight: bold; color: #e11d48; }
+
+        .backup-panel { display: flex; gap: 8px; }
     </style>
 </head>
 <body>
@@ -46,9 +52,9 @@
     <header>
         <div>
             <h1>LuxeWedding Master Suite</h1>
-            <p>🇰🇪 Ksh Edition • Blush & Rose Gold</p>
+            <p>🇰🇪 Ksh Edition • Cloud-Persistent Storage</p>
         </div>
-        <span class="badge">PRO BRIDAL</span>
+        <span class="badge">PRO SECURE</span>
     </header>
 
     <!-- Navigation Tabs -->
@@ -82,7 +88,10 @@
             <button class="action-btn" onclick="addExpense()">Add Expense</button>
         </div>
         <div class="card">
-            <h2 style="font-size: 13px; font-weight: bold; color: #881337;">📋 Expense Records</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="font-size: 13px; font-weight: bold; color: #881337;">📋 Expense Records</h2>
+                <button onclick="exportBudgetReport()" style="background:none; border:none; color:#e11d48; font-size:11px; font-weight:bold; cursor:pointer;">📥 Export Report</button>
+            </div>
             <div id="expenseList" class="list-container"><div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">No expenses logged yet.</div></div>
         </div>
     </div>
@@ -128,7 +137,7 @@
         </div>
     </div>
 
-    <!-- MODULE 4: TIMELINE -->
+    <!-- MODULE 4: TIMELINE & DATA BACKUP -->
     <div class="tab-content" id="tab-3">
         <div class="card">
             <h2 style="font-size: 13px; font-weight: bold; color: #881337;">✨ Add Wedding Day Event</h2>
@@ -141,6 +150,17 @@
         <div class="card">
             <h2 style="font-size: 13px; font-weight: bold; color: #881337;">⏱️ Day-Of Master Schedule</h2>
             <div id="timelineList" class="list-container"><div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">Schedule is empty. Add milestones above.</div></div>
+        </div>
+        
+        <!-- BACKUP & RESTORE PANEL -->
+        <div class="card" style="border-color: #fda4af; background: #fff5f5;">
+            <h2 style="font-size: 13px; font-weight: bold; color: #881337;">💾 Data Backup & Safety</h2>
+            <p>Download your wedding plan file as a backup or restore it anytime.</p>
+            <div class="backup-panel">
+                <button class="secondary-btn" onclick="downloadBackup()">📥 Backup Data</button>
+                <button class="secondary-btn" onclick="document.getElementById('importFile').click()">📤 Restore Backup</button>
+                <input type="file" id="importFile" style="display:none" onchange="restoreBackup(event)">
+            </div>
         </div>
     </div>
 </div>
@@ -156,12 +176,35 @@ function switchTab(index) {
     });
 }
 
+// Persistent Storage State
+let totalBudget = parseFloat(localStorage.getItem('lux_budget')) || 1500000;
+let expenses = JSON.parse(localStorage.getItem('lux_expenses')) || [];
+let guests = JSON.parse(localStorage.getItem('lux_guests')) || [];
+let vendors = JSON.parse(localStorage.getItem('lux_vendors')) || [];
+let timeline = JSON.parse(localStorage.getItem('lux_timeline')) || [];
+
+// Initialize on Load
+window.onload = function() {
+    document.getElementById('totalBudgetInput').value = totalBudget;
+    renderExpenses();
+    renderGuests();
+    renderVendors();
+    renderTimeline();
+};
+
+function saveState() {
+    localStorage.setItem('lux_budget', totalBudget);
+    localStorage.setItem('lux_expenses', JSON.stringify(expenses));
+    localStorage.setItem('lux_guests', JSON.stringify(guests));
+    localStorage.setItem('lux_vendors', JSON.stringify(vendors));
+    localStorage.setItem('lux_timeline', JSON.stringify(timeline));
+}
+
 // 1. Budget Script
-let totalBudget = 1500000;
-let expenses = [];
 function updateBudget() {
     totalBudget = parseFloat(document.getElementById('totalBudgetInput').value) || 0;
     document.getElementById('displayTotal').innerText = 'Ksh ' + totalBudget.toLocaleString();
+    saveState();
     calcBudget();
 }
 function addExpense() {
@@ -172,14 +215,16 @@ function addExpense() {
     expenses.push({name, cat, cost});
     document.getElementById('expName').value = '';
     document.getElementById('expCost').value = '';
+    saveState();
     renderExpenses();
 }
 function renderExpenses() {
     let container = document.getElementById('expenseList');
+    document.getElementById('displayTotal').innerText = 'Ksh ' + totalBudget.toLocaleString();
     if(expenses.length === 0) { container.innerHTML = '<div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">No expenses logged yet.</div>'; calcBudget(); return; }
     let html = '';
     expenses.forEach((e, i) => {
-        html += `<div class="list-item"><div><div class="item-title">${e.name}</div><div class="item-sub">${e.cat}</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="item-val">-Ksh ${e.cost.toLocaleString()}</span><button onclick="expenses.splice(${i},1);renderExpenses()" style="background:#ffe4e6;color:#e11d48;border:1px solid #fda4af;padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;">✕</button></div></div>`;
+        html += `<div class="list-item"><div><div class="item-title">${e.name}</div><div class="item-sub">${e.cat}</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="item-val">-Ksh ${e.cost.toLocaleString()}</span><button onclick="expenses.splice(${i},1);saveState();renderExpenses()" style="background:#ffe4e6;color:#e11d48;border:1px solid #fda4af;padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;">✕</button></div></div>`;
     });
     container.innerHTML = html;
     calcBudget();
@@ -192,9 +237,18 @@ function calcBudget() {
     remEl.innerText = 'Ksh ' + rem.toLocaleString();
     remEl.style.color = rem < 0 ? '#e11d48' : '#059669';
 }
+function exportBudgetReport() {
+    let spent = expenses.reduce((s, e) => s + e.cost, 0);
+    let text = `LUXEWEDDING BUDGET REPORT\n=========================\nTotal Budget: Ksh ${totalBudget.toLocaleString()}\nTotal Spent: Ksh ${spent.toLocaleString()}\nRemaining: Ksh ${(totalBudget - spent).toLocaleString()}\n\nEXPENSE RECORDS:\n`;
+    expenses.forEach(e => text += `- ${e.name} (${e.cat}): Ksh ${e.cost.toLocaleString()}\n`);
+    let blob = new Blob([text], {type: 'text/plain'});
+    let link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'LuxeWedding_Budget_Report.txt';
+    link.click();
+}
 
 // 2. Guest List Script
-let guests = [];
 function addGuest() {
     let name = document.getElementById('guestName').value.trim();
     let side = document.getElementById('guestSide').value;
@@ -202,6 +256,7 @@ function addGuest() {
     if(!name) return alert('Enter guest name.');
     guests.push({name, side, status});
     document.getElementById('guestName').value = '';
+    saveState();
     renderGuests();
 }
 function renderGuests() {
@@ -210,7 +265,7 @@ function renderGuests() {
     let html = '';
     guests.forEach((g, i) => {
         let color = g.status === 'Confirmed' ? '#059669' : g.status === 'Declined' ? '#e11d48' : '#d97706';
-        html += `<div class="list-item"><div><div class="item-title">${g.name}</div><div class="item-sub">Side: ${g.side}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;font-weight:bold;color:${color}">${g.status}</span><button onclick="guests.splice(${i},1);renderGuests()" style="background:#ffe4e6;color:#e11d48;border:1px solid #fda4af;padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;">✕</button></div></div>`;
+        html += `<div class="list-item"><div><div class="item-title">${g.name}</div><div class="item-sub">Side: ${g.side}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;font-weight:bold;color:${color}">${g.status}</span><button onclick="guests.splice(${i},1);saveState();renderGuests()" style="background:#ffe4e6;color:#e11d48;border:1px solid #fda4af;padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;">✕</button></div></div>`;
     });
     container.innerHTML = html;
     updateGuestStats();
@@ -222,7 +277,6 @@ function updateGuestStats() {
 }
 
 // 3. Vendors Script
-let vendors = [];
 function addVendor() {
     let name = document.getElementById('vendorName').value.trim();
     let role = document.getElementById('vendorRole').value.trim();
@@ -232,6 +286,7 @@ function addVendor() {
     document.getElementById('vendorName').value = '';
     document.getElementById('vendorRole').value = '';
     document.getElementById('vendorFee').value = '';
+    saveState();
     renderVendors();
 }
 function renderVendors() {
@@ -239,13 +294,12 @@ function renderVendors() {
     if(vendors.length === 0) { container.innerHTML = '<div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">No vendor contracts added yet.</div>'; return; }
     let html = '';
     vendors.forEach((v, i) => {
-        html += `<div class="list-item"><div><div class="item-title">${v.name}</div><div class="item-sub">Role: ${v.role}</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="item-val">Ksh ${v.fee.toLocaleString()}</span><button onclick="vendors.splice(${i},1);renderVendors()" style="background:#ffe4e6;color:#e11d48;border:1px solid #fda4af;padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;">✕</button></div></div>`;
+        html += `<div class="list-item"><div><div class="item-title">${v.name}</div><div class="item-sub">Role: ${v.role}</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="item-val">Ksh ${v.fee.toLocaleString()}</span><button onclick="vendors.splice(${i},1);saveState();renderVendors()" style="background:#ffe4e6;color:#e11d48;border:1px solid #fda4af;padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;">✕</button></div></div>`;
     });
     container.innerHTML = html;
 }
 
 // 4. Timeline Script
-let timeline = [];
 function addTimelineEvent() {
     let time = document.getElementById('eventTime').value.trim();
     let desc = document.getElementById('eventDesc').value.trim();
@@ -253,6 +307,7 @@ function addTimelineEvent() {
     timeline.push({time, desc});
     document.getElementById('eventTime').value = '';
     document.getElementById('eventDesc').value = '';
+    saveState();
     renderTimeline();
 }
 function renderTimeline() {
@@ -260,9 +315,44 @@ function renderTimeline() {
     if(timeline.length === 0) { container.innerHTML = '<div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">Schedule is empty. Add milestones above.</div>'; return; }
     let html = '';
     timeline.forEach((t, i) => {
-        html += `<div class="list-item"><div><div class="item-title" style="color:#e11d48;">${t.time}</div><div class="item-sub">${t.desc}</div></div><button onclick="timeline.splice(${i},1);renderTimeline()" style="background:#ffe4e6;color:#e11d48;border:1px solid #fda4af;padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;">✕</button></div>`;
+        html += `<div class="list-item"><div><div class="item-title" style="color:#e11d48;">${t.time}</div><div class="item-sub">${t.desc}</div></div><button onclick="timeline.splice(${i},1);saveState();renderTimeline()" style="background:#ffe4e6;color:#e11d48;border:1px solid #fda4af;padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;">✕</button></div>`;
     });
     container.innerHTML = html;
+}
+
+// Backup & Restore
+function downloadBackup() {
+    let data = { totalBudget, expenses, guests, vendors, timeline };
+    let blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    let link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'LuxeWedding_Backup.json';
+    link.click();
+}
+function restoreBackup(event) {
+    let file = event.target.files[0];
+    if(!file) return;
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            let data = JSON.parse(e.target.result);
+            totalBudget = data.totalBudget || 1500000;
+            expenses = data.expenses || [];
+            guests = data.guests || [];
+            vendors = data.vendors || [];
+            timeline = data.timeline || [];
+            saveState();
+            document.getElementById('totalBudgetInput').value = totalBudget;
+            renderExpenses();
+            renderGuests();
+            renderVendors();
+            renderTimeline();
+            alert('Backup restored successfully!');
+        } catch(err) {
+            alert('Invalid backup file.');
+        }
+    };
+    reader.readAsText(file);
 }
 </script>
 

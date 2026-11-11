@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuxeWedding Master Suite - Ksh Edition</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #fff1f2; color: #4c0519; padding: 16px; }
+        .container { max-width: 650px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #fecdd3; padding-bottom: 12px; }
+        h1 { font-size: 17px; font-weight: 700; color: #881337; }
+        p { font-size: 11px; color: #9f1239; }
+        .badge { background: #ffe4e6; color: #be123c; border: 1px solid #fda4af; padding: 4px 10px; border-radius: 9999px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 5px rgba(244,63,94,0.1); }
+        
+        /* Navigation Tabs */
+        .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; background: #ffe4e6; padding: 6px; border-radius: 14px; border: 1px solid #fbcfe8; }
+        .tab-btn { background: transparent; border: none; color: #9f1239; padding: 8px 4px; font-size: 10px; font-weight: bold; border-radius: 10px; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .tab-btn.active { background: #ffffff; color: #e11d48; box-shadow: 0 4px 12px rgba(225,29,72,0.15); }
+
+        .card { background: #ffffff; border: 1px solid #fbcfe8; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(244, 63, 94, 0.05); }
+        .tab-content { display: none; flex-direction: column; gap: 16px; }
+        .tab-content.active { display: flex; }
+
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+        .box { background: #fff5f5; border: 1px solid #fecdd3; padding: 10px; border-radius: 12px; }
+        .box-title { font-size: 9px; color: #9f1239; text-transform: uppercase; font-weight: 700; }
+        .box-val { font-size: 12px; font-weight: bold; margin-top: 4px; color: #881337; font-family: monospace; }
+        
+        label { font-size: 11px; color: #881337; font-weight: 600; display: block; margin-bottom: 4px; }
+        input, select { width: 100%; background: #fff5f5; border: 1px solid #fbcfe8; color: #4c0519; padding: 10px; border-radius: 10px; font-size: 13px; outline: none; }
+        input:focus, select:focus { border-color: #e11d48; background: #fff; }
+        button.action-btn { width: 100%; background: linear-gradient(135deg, #f43f5e, #e11d48); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 12px rgba(225,29,72,0.3); }
+        button.action-btn:hover { background: linear-gradient(135deg, #e11d48, #be123c); }
+
+        .list-container { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; background: #fff5f5; padding: 10px 12px; border-radius: 10px; border: 1px solid #fecdd3; font-size: 12px; }
+        .item-title { font-weight: 600; color: #881337; }
+        .item-sub { font-size: 10px; color: #9f1239; }
+        .item-val { font-family: monospace; font-weight: bold; color: #e11d48; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>LuxeWedding Master Suite</h1>
+            <p>🇰🇪 Ksh Edition • Blush & Rose Gold</p>
+        </div>
+        <span class="badge">PRO BRIDAL</span>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(0)">💰 Budget</button>
+        <button class="tab-btn" onclick="switchTab(1)">👥 Guests</button>
+        <button class="tab-btn" onclick="switchTab(2)">🏛️ Vendors</button>
+        <button class="tab-btn" onclick="switchTab(3)">⏱️ Timeline</button>
+    </div>
+
+    <!-- MODULE 1: BUDGET -->
+    <div class="tab-content active" id="tab-0">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label>Total Budget (Ksh)</label>
+                <input type="number" id="totalBudgetInput" value="1500000" onchange="updateBudget()" style="width: 130px; text-align: right; font-weight: bold;">
+            </div>
+            <div class="grid-3">
+                <div class="box"><div class="box-title">Total Budget</div><div id="displayTotal" class="box-val">Ksh 1,500,000</div></div>
+                <div class="box" style="border-color: #fda4af;"><div class="box-title" style="color: #e11d48;">Spent</div><div id="displaySpent" class="box-val" style="color: #e11d48;">Ksh 0</div></div>
+                <div class="box" style="border-color: #6ee7b7;"><div class="box-title" style="color: #059669;">Left</div><div id="displayRemaining" class="box-val" style="color: #059669;">Ksh 1,500,000</div></div>
+            </div>
+        </div>
+        <div class="card">
+            <h2 style="font-size: 13px; font-weight: bold; color: #881337;">✨ Add Expense</h2>
+            <div style="display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 8px;">
+                <div><label>Item Name</label><input type="text" id="expName" placeholder="e.g. Garden Venue"></div>
+                <div><label>Category</label><select id="expCat"><option>Venue</option><option>Catering</option><option>Photo/Video</option><option>Attire</option><option>Decor</option></select></div>
+                <div><label>Cost (Ksh)</label><input type="number" id="expCost" placeholder="150000"></div>
+            </div>
+            <button class="action-btn" onclick="addExpense()">Add Expense</button>
+        </div>
+        <div class="card">
+            <h2 style="font-size: 13px; font-weight: bold; color: #881337;">📋 Expense Records</h2>
+            <div id="expenseList" class="list-container"><div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">No expenses logged yet.</div></div>
+        </div>
+    </div>
+
+    <!-- MODULE 2: GUEST LIST -->
+    <div class="tab-content" id="tab-1">
+        <div class="card">
+            <div class="grid-3">
+                <div class="box"><div class="box-title">Total Invited</div><div id="statTotalGuests" class="box-val">0</div></div>
+                <div class="box" style="border-color: #6ee7b7;"><div class="box-title" style="color: #059669;">Confirmed</div><div id="statConfirmed" class="box-val" style="color: #059669;">0</div></div>
+                <div class="box" style="border-color: #fda4af;"><div class="box-title" style="color: #e11d48;">Declined</div><div id="statDeclined" class="box-val" style="color: #e11d48;">0</div></div>
+            </div>
+        </div>
+        <div class="card">
+            <h2 style="font-size: 13px; font-weight: bold; color: #881337;">✨ Add Guest</h2>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px;">
+                <div><label>Guest Full Name</label><input type="text" id="guestName" placeholder="e.g. Brenda Akinyi"></div>
+                <div><label>Side</label><select id="guestSide"><option>Bride</option><option>Groom</option><option>Mutual</option></select></div>
+                <div><label>RSVP Status</label><select id="guestStatus"><option>Confirmed</option><option>Pending</option><option>Declined</option></select></div>
+            </div>
+            <button class="action-btn" onclick="addGuest()">Add to Guest List</button>
+        </div>
+        <div class="card">
+            <h2 style="font-size: 13px; font-weight: bold; color: #881337;">👥 Guest Directory</h2>
+            <div id="guestList" class="list-container"><div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">No guests added yet.</div></div>
+        </div>
+    </div>
+
+    <!-- MODULE 3: VENDORS -->
+    <div class="tab-content" id="tab-2">
+        <div class="card">
+            <h2 style="font-size: 13px; font-weight: bold; color: #881337;">✨ Add Vendor Contract</h2>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px;">
+                <div><label>Vendor Business</label><input type="text" id="vendorName" placeholder="e.g. Nairobi Floral Hub"></div>
+                <div><label>Service Role</label><input type="text" id="vendorRole" placeholder="Florist & Decor"></div>
+                <div><label>Agreed Fee (Ksh)</label><input type="number" id="vendorFee" placeholder="120000"></div>
+            </div>
+            <button class="action-btn" onclick="addVendor()">Save Vendor Contract</button>
+        </div>
+        <div class="card">
+            <h2 style="font-size: 13px; font-weight: bold; color: #881337;">🏛️ Active Vendor Contracts</h2>
+            <div id="vendorList" class="list-container"><div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">No vendor contracts added yet.</div></div>
+        </div>
+    </div>
+
+    <!-- MODULE 4: TIMELINE -->
+    <div class="tab-content" id="tab-3">
+        <div class="card">
+            <h2 style="font-size: 13px; font-weight: bold; color: #881337;">✨ Add Wedding Day Event</h2>
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px;">
+                <div><label>Time</label><input type="text" id="eventTime" placeholder="10:00 AM"></div>
+                <div><label>Activity Description</label><input type="text" id="eventDesc" placeholder="Church ceremony starts"></div>
+            </div>
+            <button class="action-btn" onclick="addTimelineEvent()">Add to Schedule</button>
+        </div>
+        <div class="card">
+            <h2 style="font-size: 13px; font-weight: bold; color: #881337;">⏱️ Day-Of Master Schedule</h2>
+            <div id="timelineList" class="list-container"><div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">Schedule is empty. Add milestones above.</div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Tab Switching Logic
+function switchTab(index) {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+    tabs.forEach((t, i) => {
+        t.classList.toggle('active', i === index);
+        contents[i].classList.toggle('active', i === index);
+    });
+}
+
+// 1. Budget Script
+let totalBudget = 1500000;
+let expenses = [];
+function updateBudget() {
+    totalBudget = parseFloat(document.getElementById('totalBudgetInput').value) || 0;
+    document.getElementById('displayTotal').innerText = 'Ksh ' + totalBudget.toLocaleString();
+    calcBudget();
+}
+function addExpense() {
+    let name = document.getElementById('expName').value.trim();
+    let cat = document.getElementById('expCat').value;
+    let cost = parseFloat(document.getElementById('expCost').value);
+    if(!name || isNaN(cost)) return alert('Enter valid expense details.');
+    expenses.push({name, cat, cost});
+    document.getElementById('expName').value = '';
+    document.getElementById('expCost').value = '';
+    renderExpenses();
+}
+function renderExpenses() {
+    let container = document.getElementById('expenseList');
+    if(expenses.length === 0) { container.innerHTML = '<div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">No expenses logged yet.</div>'; calcBudget(); return; }
+    let html = '';
+    expenses.forEach((e, i) => {
+        html += `<div class="list-item"><div><div class="item-title">${e.name}</div><div class="item-sub">${e.cat}</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="item-val">-Ksh ${e.cost.toLocaleString()}</span><button onclick="expenses.splice(${i},1);renderExpenses()" style="background:#ffe4e6;color:#e11d48;border:1px solid #fda4af;padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;">✕</button></div></div>`;
+    });
+    container.innerHTML = html;
+    calcBudget();
+}
+function calcBudget() {
+    let spent = expenses.reduce((s, e) => s + e.cost, 0);
+    let rem = totalBudget - spent;
+    document.getElementById('displaySpent').innerText = 'Ksh ' + spent.toLocaleString();
+    let remEl = document.getElementById('displayRemaining');
+    remEl.innerText = 'Ksh ' + rem.toLocaleString();
+    remEl.style.color = rem < 0 ? '#e11d48' : '#059669';
+}
+
+// 2. Guest List Script
+let guests = [];
+function addGuest() {
+    let name = document.getElementById('guestName').value.trim();
+    let side = document.getElementById('guestSide').value;
+    let status = document.getElementById('guestStatus').value;
+    if(!name) return alert('Enter guest name.');
+    guests.push({name, side, status});
+    document.getElementById('guestName').value = '';
+    renderGuests();
+}
+function renderGuests() {
+    let container = document.getElementById('guestList');
+    if(guests.length === 0) { container.innerHTML = '<div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">No guests added yet.</div>'; updateGuestStats(); return; }
+    let html = '';
+    guests.forEach((g, i) => {
+        let color = g.status === 'Confirmed' ? '#059669' : g.status === 'Declined' ? '#e11d48' : '#d97706';
+        html += `<div class="list-item"><div><div class="item-title">${g.name}</div><div class="item-sub">Side: ${g.side}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;font-weight:bold;color:${color}">${g.status}</span><button onclick="guests.splice(${i},1);renderGuests()" style="background:#ffe4e6;color:#e11d48;border:1px solid #fda4af;padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;">✕</button></div></div>`;
+    });
+    container.innerHTML = html;
+    updateGuestStats();
+}
+function updateGuestStats() {
+    document.getElementById('statTotalGuests').innerText = guests.length;
+    document.getElementById('statConfirmed').innerText = guests.filter(g => g.status === 'Confirmed').length;
+    document.getElementById('statDeclined').innerText = guests.filter(g => g.status === 'Declined').length;
+}
+
+// 3. Vendors Script
+let vendors = [];
+function addVendor() {
+    let name = document.getElementById('vendorName').value.trim();
+    let role = document.getElementById('vendorRole').value.trim();
+    let fee = parseFloat(document.getElementById('vendorFee').value);
+    if(!name || isNaN(fee)) return alert('Enter vendor details.');
+    vendors.push({name, role, fee});
+    document.getElementById('vendorName').value = '';
+    document.getElementById('vendorRole').value = '';
+    document.getElementById('vendorFee').value = '';
+    renderVendors();
+}
+function renderVendors() {
+    let container = document.getElementById('vendorList');
+    if(vendors.length === 0) { container.innerHTML = '<div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">No vendor contracts added yet.</div>'; return; }
+    let html = '';
+    vendors.forEach((v, i) => {
+        html += `<div class="list-item"><div><div class="item-title">${v.name}</div><div class="item-sub">Role: ${v.role}</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="item-val">Ksh ${v.fee.toLocaleString()}</span><button onclick="vendors.splice(${i},1);renderVendors()" style="background:#ffe4e6;color:#e11d48;border:1px solid #fda4af;padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;">✕</button></div></div>`;
+    });
+    container.innerHTML = html;
+}
+
+// 4. Timeline Script
+let timeline = [];
+function addTimelineEvent() {
+    let time = document.getElementById('eventTime').value.trim();
+    let desc = document.getElementById('eventDesc').value.trim();
+    if(!time || !desc) return alert('Enter time and description.');
+    timeline.push({time, desc});
+    document.getElementById('eventTime').value = '';
+    document.getElementById('eventDesc').value = '';
+    renderTimeline();
+}
+function renderTimeline() {
+    let container = document.getElementById('timelineList');
+    if(timeline.length === 0) { container.innerHTML = '<div style="text-align:center; color:#9f1239; font-size:11px; padding:15px;">Schedule is empty. Add milestones above.</div>'; return; }
+    let html = '';
+    timeline.forEach((t, i) => {
+        html += `<div class="list-item"><div><div class="item-title" style="color:#e11d48;">${t.time}</div><div class="item-sub">${t.desc}</div></div><button onclick="timeline.splice(${i},1);renderTimeline()" style="background:#ffe4e6;color:#e11d48;border:1px solid #fda4af;padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;">✕</button></div>`;
+    });
+    container.innerHTML = html;
+}
+</script>
+
+</body>
+</html>
